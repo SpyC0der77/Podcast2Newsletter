@@ -22,7 +22,7 @@ def find_dict_by_value(list_of_dicts, key, value):
             return dict_item
     return None
 
-FFMPEG_PATH = r"C:\\Users\\Carter\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe"
+FFMPEG_PATH = os.getenv("FFMPEG_PATH")
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ["PATH"]
 
 def check_ffmpeg():
