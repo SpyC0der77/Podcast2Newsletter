@@ -43,17 +43,10 @@ This project automates the process of downloading podcast episodes, transcribing
    ```plaintext
    GROQ_API_KEY=your_groq_api_key
    PODCAST_URL=your_podcast_rss_feed_url
+   FFMPEG_PATH=path_to_your_ffmpeg_executable
    ```
 
-   Replace `your_groq_api_key` and `your_podcast_rss_feed_url` with your actual API key and podcast RSS feed URL.
-
-4. **FFmpeg Configuration**
-
-   Ensure FFmpeg is installed and update the `FFMPEG_PATH` variable in the script to point to your FFmpeg executable:
-
-   ```python
-   FFMPEG_PATH = r"C:\\path\\to\\ffmpeg.exe"
-   ```
+   Replace `your_groq_api_key`, `your_podcast_rss_feed_url`, and `path_to_your_ffmpeg_executable` with your actual API key, podcast RSS feed URL, and the path to your FFmpeg executable.
 
 ## Usage
 
