@@ -7,8 +7,6 @@ import subprocess
 from tqdm import tqdm
 from groq import Groq
 from dotenv import load_dotenv
-import threading
-import time
 import sys
 
 load_dotenv()
@@ -37,22 +35,6 @@ if not check_ffmpeg():
     exit(1)
 
 print("FFmpeg found successfully!")
-
-# Timer function
-def display_timer():
-    start_time = time.time()
-    while True:
-        elapsed_time = time.time() - start_time
-        sys.stdout.write(f"\rElapsed Time: {elapsed_time:.2f} seconds")
-        sys.stdout.flush()
-        time.sleep(1)
-
-def start_timer():
-    timer_thread = threading.Thread(target=display_timer, daemon=True)
-    timer_thread.start()
-
-# Start the timer
-start_timer()
 
 # Parse the RSS feed
 d = feedparser.parse(os.getenv("PODCAST_URL"))
