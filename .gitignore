@@ -1,0 +1,8 @@
+.env
+.conda
+.venv
+shuttleai-version.json
+podcast.mp3
+gradio.py
+test.py
+result.json
