@@ -134,16 +134,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 Contributions are welcome! Feel free to fork the repository and submit a pull request.
 
 ---
-
-## Acknowledgments
-
-- [OpenAI Whisper](https://openai.com/whisper)
-- [Google Generative AI (Gemini)](https://developers.google.com/generative-ai)
-- [FFmpeg](https://ffmpeg.org/)
-
----
-
-## Author
-
-[Your Name](https://github.com/your-username)
-
