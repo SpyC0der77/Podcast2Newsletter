@@ -5,16 +5,18 @@ import json
 from urllib.request import Request, urlopen
 import subprocess
 from tqdm import tqdm
-from groq import Groq
 from dotenv import load_dotenv
 import threading
 import time
 import sys
+import google.generativeai as genai
+from google.ai.generativelanguage_v1beta.types import content
+from pybars import Compiler
 
 load_dotenv()
 
-print(os.getenv("GROQ_API_KEY"))
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
+print(os.getenv("GEMINI_API_KEY"))
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 def find_dict_by_value(list_of_dicts, key, value):
     for dict_item in list_of_dicts:
@@ -22,7 +24,7 @@ def find_dict_by_value(list_of_dicts, key, value):
             return dict_item
     return None
 
-FFMPEG_PATH = os.getenv("FFMPEG_PATH")
+FFMPEG_PATH = r"C:\Users\Carter\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ["PATH"]
 
 def check_ffmpeg():
@@ -57,6 +59,9 @@ start_timer()
 # Parse the RSS feed
 d = feedparser.parse(os.getenv("PODCAST_URL"))
 episode = d['entries'][0]
+with open("episode.json", "w") as f:
+    f.write(json.dumps(episode, indent=4))
+
 print(episode["links"])
 
 audio = find_dict_by_value(episode["links"], 'type', 'audio/mpeg')
@@ -172,26 +177,113 @@ print(f"Merged VTT saved to {merged_vtt_file}")
 # Generate Newsletter
 print("\nGenerating newsletter...")
 print(json.dumps(vtt_data))
-chat_completion = client.chat.completions.create(
-    messages=[
-        {
-            "role": "system",
-            "content": "You are going to turn a VTT file into a newsletter. Using markdown, have a minimum of 5 paragraphs with at least 6 sentences. The VTT file might not be totally correct. In the newsletter, you should correct it based on this data. Here is the podcast episode data: " + json.dumps(episode) + ". Here is the VTT file: " + json.dumps(vtt_data),
-        },
-        {
-            "role": "user",
-            "content": "Give me the newsletter.",
-        }
-    ],
 
-    model="llama3-8b-8192",
-    temperature=0.5,
-    top_p=1,
-    stop=None,
-    stream=False,
+# Create the model
+generation_config = {
+  "temperature": 1,
+  "top_p": 0.95,
+  "top_k": 40,
+  "max_output_tokens": 8192,
+  "response_schema": content.Schema(
+    type = content.Type.OBJECT,
+    enum = [],
+    required = ["title", "summary", "sections"],
+    properties = {
+      "title": content.Schema(
+        type = content.Type.STRING,
+      ),
+      "summary": content.Schema(
+        type = content.Type.STRING,
+      ),
+      "sections": content.Schema(
+        type = content.Type.ARRAY,
+        items = content.Schema(
+          type = content.Type.OBJECT,
+          enum = [],
+          required = ["timestamp", "header", "content"],
+          properties = {
+            "timestamp": content.Schema(
+              type = content.Type.NUMBER,
+            ),
+            "header": content.Schema(
+              type = content.Type.STRING,
+            ),
+            "content": content.Schema(
+              type = content.Type.STRING,
+            ),
+          },
+        ),
+      ),
+    },
+  ),
+  "response_mime_type": "application/json",
+}
+
+model = genai.GenerativeModel(
+  model_name="gemini-1.5-flash-8b",
+  generation_config=generation_config,
+  system_instruction="You are going to turn a VTT file into a newsletter using markdown. The VTT file might not be totally correct. In the newsletter, you should correct it based on the episode data given. For each thing they talk about, put it in a seperate section. Don't just respond with the transcript, respond with a summary of each part. For the timestamp, extract the starting timestamp from the vtt data you are given, in seconds.",
 )
 
-print(chat_completion.choices[0].message.content)
+chat_session = model.start_chat(
+  history=[
+  ]
+)
 
-with open("newsletter.md", "w") as f:
-    f.write(chat_completion.choices[0].message.content)
+with open("episode.json", "r") as f:
+    episode = json.load(f)
+
+with open("chunks/vtt/merged_transcription.vtt", "r") as f:
+    vtt_data = json.load(f)
+response = chat_session.send_message("Podcast episode data: " + json.dumps(episode) + ". Here is the VTT file: " + json.dumps(vtt_data))
+
+print(response.text)
+
+with open("response.json", "w") as f:
+    f.write(response.text)
+
+json_input = json.loads(response.text)
+# Base URL for timestamps
+base_url = audio['href']
+
+def format_timestamp(seconds):
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    seconds = int(seconds % 60)
+    return f"{hours:02}:{minutes:02}:{seconds:02}"
+
+# Preprocess JSON to include formatted timestamps
+for section in json_input["sections"]:
+    section["formatted_timestamp"] = format_timestamp(section["timestamp"])
+
+# Handlebars template
+markdown_template = """
+# {{title}}
+
+{{summary}}
+
+{{#each sections}}
+## {{header}}
+
+{{content}}
+
+[{{formatted_timestamp}}]({{../base_url}}#t={{timestamp}})
+
+{{/each}}
+"""
+
+# Compile the template
+compiler = Compiler()
+template = compiler.compile(markdown_template)
+
+# Add the base_url to the JSON input
+json_input["base_url"] = base_url
+
+# Generate Markdown
+output = template(json_input)
+
+# Write to a file
+with open("newsletter.md", "w") as file:
+    file.write(output)
+
+print("Markdown newsletter with formatted timestamps generated successfully.")
