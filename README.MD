@@ -1,100 +1,149 @@
-# Podcast to Newsletter Automation
+# Podcast2Newsletter
 
-This project automates the process of downloading podcast episodes, transcribing them using OpenAI's Whisper model, and generating a newsletter using Groq's LLM. It also provides a timer to track the runtime of the script.
+Podcast2Newsletter is a Python-based tool that automates the process of converting podcast episodes into newsletters. It downloads podcast audio, transcribes it, summarizes key points, and formats them into a Markdown newsletter.
+
+---
 
 ## Features
 
-- **RSS Feed Parsing**: Downloads the latest podcast episode from a given RSS feed.
-- **Audio Download**: Downloads podcast episodes with a progress bar.
-- **Audio Splitting**: Splits large audio files into smaller chunks using FFmpeg.
-- **Transcription**: Transcribes audio chunks using OpenAI's Whisper model.
-- **VTT Generation**: Converts transcriptions to VTT (Web Video Text Tracks) format.
-- **Newsletter Generation**: Uses Groq's LLM to generate a newsletter from the VTT file.
-- **Timer**: Displays a real-time timer showing the script's execution time.
+- **Podcast Download:** Fetches podcast episodes from an RSS feed.
+- **Audio Processing:** Splits audio files into manageable chunks using FFmpeg.
+- **Transcription:** Converts audio to text using the Whisper ASR model.
+- **Summary and Newsletter Generation:** Summarizes transcriptions and formats them into a newsletter in Markdown.
+- **Handlebars Template:** Provides an easy way to customize newsletter formatting.
 
-## Prerequisites
+---
 
-### Software Requirements
+## Requirements
 
-- **Python 3.8 or higher**
-- **FFmpeg** (Ensure it is installed and available in the specified path)
+- Python 3.7+
+- FFmpeg
+- OpenAI Whisper
+- Google Generative AI API (Gemini)
+- Required Python Libraries:
+  - `feedparser`
+  - `whisper`
+  - `dotenv`
+  - `pybars`
+  - `tqdm`
+  - `google-generativeai`
 
-### Installation
+---
 
-1. **Clone the Repository**
+## Installation
 
+1. Clone the repository:
    ```bash
-   git clone <repository-url>
-   cd <repository-folder>
+   git clone https://github.com/your-username/podcast2newsletter.git
+   cd podcast2newsletter
    ```
 
-2. **Install Dependencies**
-
-   Install the required Python libraries:
-
+2. Install the dependencies:
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Set Up Environment Variables**
+3. Ensure FFmpeg is installed and its path is set in the `.env` file.
 
-   Create a `.env` file in the root directory with the following variables:
+---
 
-   ```plaintext
-   GROQ_API_KEY=your_groq_api_key
-   PODCAST_URL=your_podcast_rss_feed_url
-   FFMPEG_PATH=path_to_your_ffmpeg_executable
-   ```
+## Configuration
 
-   Replace `your_groq_api_key`, `your_podcast_rss_feed_url`, and `path_to_your_ffmpeg_executable` with your actual API key, podcast RSS feed URL, and the path to your FFmpeg executable.
+Create a `.env` file in the root directory and add the following environment variables:
+
+```env
+PODCAST_URL=<Your Podcast RSS Feed URL>
+FFMPEG_PATH=<Path to FFmpeg executable>
+GEMINI_API_KEY=<Your Google Gemini API Key>
+```
+
+---
 
 ## Usage
 
-Run the script with:
+1. Run the script:
+   ```bash
+   python podcast2newsletter.py
+   ```
 
-```bash
-python script.py
+2. The script will:
+   - Download the latest podcast episode from the RSS feed.
+   - Split the audio into chunks.
+   - Transcribe each chunk.
+   - Generate a Markdown newsletter summarizing the episode.
+
+3. Output files:
+   - Transcriptions: Stored in `chunks/transcriptions/`.
+   - VTT Files: Stored in `chunks/vtt/`.
+   - Final Newsletter: `newsletter.md`
+
+---
+
+## How It Works
+
+1. **Podcast Download:**
+   - Parses the RSS feed and downloads the latest episode audio.
+
+2. **Audio Chunking:**
+   - Splits the audio into smaller chunks for easier processing.
+
+3. **Transcription:**
+   - Transcribes each chunk using Whisper ASR.
+
+4. **VTT Merging:**
+   - Merges transcriptions into a single VTT file.
+
+5. **Summary Generation:**
+   - Generates a summarized Markdown newsletter using Google Gemini API and Handlebars templates.
+
+6. **Markdown Output:**
+   - The final newsletter is saved as `newsletter.md` with clickable timestamps.
+
+---
+
+## Example Output
+
+```markdown
+# Episode Title
+
+Episode Summary
+
+## Section Header
+
+Section content.
+
+[00:05:30](<Podcast Episode URL>#t=330)
+
+## Another Section Header
+
+More content.
+
+[00:10:15](<Podcast Episode URL>#t=615)
 ```
 
-The script will:
-
-1. Download the latest podcast episode.
-2. Split the audio into chunks.
-3. Transcribe each chunk and generate VTT files.
-4. Merge the VTT files.
-5. Generate a newsletter in markdown format.
-
-The generated newsletter will be saved as `newsletter.md`.
-
-## Timer
-
-A timer will display at the bottom of the terminal, showing the elapsed time throughout the execution of the script.
-
-## Project Structure
-
-```
-.
-├── chunks
-│   ├── audio
-│   ├── transcriptions
-│   └── vtt
-├── script.py
-├── requirements.txt
-└── .env
-```
-
-## Dependencies
-
-- **feedparser**: For parsing the RSS feed.
-- **whisper**: OpenAI's Whisper model for audio transcription.
-- **tqdm**: For displaying progress bars.
-- **groq**: For interacting with the Groq API.
-- **python-dotenv**: For managing environment variables.
+---
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Contributing
+---
 
-Contributions are welcome! Please submit an issue or pull request for any improvements or suggestions.
+## Contributions
+
+Contributions are welcome! Feel free to fork the repository and submit a pull request.
+
+---
+
+## Acknowledgments
+
+- [OpenAI Whisper](https://openai.com/whisper)
+- [Google Generative AI (Gemini)](https://developers.google.com/generative-ai)
+- [FFmpeg](https://ffmpeg.org/)
+
+---
+
+## Author
+
+[Your Name](https://github.com/your-username)
+
