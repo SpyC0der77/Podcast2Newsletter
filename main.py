@@ -22,7 +22,7 @@ def find_dict_by_value(list_of_dicts, key, value):
             return dict_item
     return None
 
-FFMPEG_PATH = r"C:\Users\Carter\ffmpeg-master-latest-win64-gpl\bin\ffmpeg.exe"
+FFMPEG_PATH = r"C:\\Users\\Carter\\ffmpeg-master-latest-win64-gpl\\bin\\ffmpeg.exe"
 os.environ["PATH"] = os.path.dirname(FFMPEG_PATH) + os.pathsep + os.environ["PATH"]
 
 def check_ffmpeg():
@@ -216,7 +216,7 @@ with open("episode.json", "r") as f:
     episode = json.load(f)
 
 with open("chunks/vtt/merged_transcription.vtt", "r") as f:
-    vtt_data = json.load(f)
+    vtt_data = f.read()
 response = chat_session.send_message("Podcast episode data: " + json.dumps(episode) + ". Here is the VTT file: " + json.dumps(vtt_data))
 
 print(response.text)
