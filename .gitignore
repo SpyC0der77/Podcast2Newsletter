@@ -6,5 +6,8 @@ podcast.mp3
 gradio.py
 test.py
 result.json
-email.py
 releases
+episode.json
+chunks
+response.json
+newsletter.md
