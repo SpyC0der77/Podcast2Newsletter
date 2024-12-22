@@ -204,7 +204,7 @@ generation_config = {
 model = genai.GenerativeModel(
   model_name="gemini-1.5-flash-8b",
   generation_config=generation_config,
-  system_instruction="You are going to turn a VTT file into a newsletter using markdown. The VTT file might not be totally correct. In the newsletter, you should correct it based on the episode data given. For each thing they talk about, put it in a seperate section. Don't just respond with the transcript, respond with a summary of each part. For the timestamp, extract the starting timestamp from the vtt data you are given, in seconds.",
+  system_instruction="You are going to turn a VTT file into a newsletter using markdown. The VTT file might not be totally correct. In the newsletter, you should correct it based on the episode data given. For each thing they talk about, put it in a seperate section. Don't just respond with the transcript, respond with a summary of each part. For the timestamp, extract the starting timestamp from the vtt data you are given, in seconds. Make it proffesional. Do NOT just put the transcript. Don't include advertisements.",
 )
 
 chat_session = model.start_chat(
