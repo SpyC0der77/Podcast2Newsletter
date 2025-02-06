@@ -68,7 +68,10 @@ async def main():
     episode_description = episode.description
 
     # Transcribe podcast using Deepgram
-    deepgram = Deepgram(os.getenv("DEEPGRAM_API_KEY"))
+    DEEPGRAM_API_KEY = os.getenv("DEEPGRAM_API_KEY")
+    if not DEEPGRAM_API_KEY:
+        raise EnvironmentError("DEEPGRAM_API_KEY not found in environment variables.")
+    deepgram = Deepgram(DEEPGRAM_API_KEY)
     source = {'url': audio_url}
     transcription_options = {"punctuate": True, "diarize": True, "paragraphs": True}
     
