@@ -76,8 +76,12 @@ async def main():
     transcription_options = {"punctuate": True, "diarize": True, "paragraphs": True}
     
     print("Transcribing podcast...")
-    response = await deepgram.transcription.prerecorded(source, transcription_options)
-    
+    print("Transcribing podcast...")
+    try:
+        response = await deepgram.transcription.prerecorded(source, transcription_options)
+    except Exception as e:
+        print(f"Error during transcription: {e}")
+        return
     # Extract paragraphs with timestamps
     paragraphs = response['results']['channels'][0]['alternatives'][0]['paragraphs']['paragraphs']
     transcript_segments = []
