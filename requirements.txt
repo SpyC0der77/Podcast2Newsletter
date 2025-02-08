@@ -1,7 +1,7 @@
 feedparser
 pybars3
 python-dotenv
-deepgram
+deepgram-sdk==2.12.0
 google-generativeai
 google-api-python-client
 google-auth-httplib2
