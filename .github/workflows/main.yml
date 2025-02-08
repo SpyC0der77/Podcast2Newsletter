@@ -30,4 +30,4 @@ jobs:
           DEEPGRAM_API_KEY: ${{ secrets.DEEPGRAM_API_KEY }}
           CREDENTIALS: ${{ secrets.CREDENTIALS }}
         run: |
-          python integrated_newsletter_emailer.py
+          python action.py
