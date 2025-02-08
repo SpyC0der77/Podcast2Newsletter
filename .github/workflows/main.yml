@@ -1,0 +1,33 @@
+name: Run Newsletter Generator Daily
+
+on:
+  schedule:
+    # This cron expression runs the workflow every day at midnight UTC.
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  run-newsletter:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Newsletter Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          DEEPGRAM_API_KEY: ${{ secrets.DEEPGRAM_API_KEY }}
+          CREDENTIALS: ${{ secrets.CREDENTIALS }}
+        run: |
+          python integrated_newsletter_emailer.py
