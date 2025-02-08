@@ -2,7 +2,6 @@ name: Run Newsletter Generator Daily
 
 on:
   schedule:
-    # This cron expression runs the workflow every day at midnight UTC.
     - cron: "0 0 * * *"
   workflow_dispatch:
 
@@ -14,7 +13,7 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.12"
@@ -29,5 +28,6 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           DEEPGRAM_API_KEY: ${{ secrets.DEEPGRAM_API_KEY }}
           CREDENTIALS: ${{ secrets.CREDENTIALS }}
+          GMAIL_TOKEN: ${{ secrets.GMAIL_TOKEN }}
         run: |
           python action.py
