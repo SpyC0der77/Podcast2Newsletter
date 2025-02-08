@@ -28,7 +28,7 @@ from googleapiclient.discovery import build
 load_dotenv()
 
 # ---------------- Gemini API Configuration ----------------
-# Configure Gemini API with your API key
+# Configure Gemini API with your API key.
 genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 # Set up the generation configuration for the Gemini model.
@@ -73,27 +73,45 @@ SCOPES = ['https://www.googleapis.com/auth/gmail.send']
 
 def get_gmail_service():
     """
-    Authenticate with the Gmail API using credentials from an environment variable
-    and return a service object.
+    Authenticate with the Gmail API using credentials from environment variables.
+    It first checks for a stored token in 'token.pickle'. If not found, it checks for
+    a GMAIL_TOKEN environment variable (expected to be a base64-encoded token pickle).
+    In a CI environment, if no valid token is available, an error is raised.
     """
     creds = None
-    # Load token if it exists
+
+    # Check if token.pickle exists
     if os.path.exists('token.pickle'):
         with open('token.pickle', 'rb') as token:
             creds = pickle.load(token)
-    # If no valid credentials, initiate the OAuth flow.
+    else:
+        # If token.pickle does not exist, check if GMAIL_TOKEN is provided.
+        if "GMAIL_TOKEN" in os.environ:
+            try:
+                token_data = base64.b64decode(os.environ["GMAIL_TOKEN"])
+                with open('token.pickle', 'wb') as token_file:
+                    token_file.write(token_data)
+                with open('token.pickle', 'rb') as token:
+                    creds = pickle.load(token)
+            except Exception as e:
+                raise Exception(f"Error decoding GMAIL_TOKEN: {e}")
+
+    # If no credentials or invalid credentials, check if we can do interactive login.
     if not creds or not creds.valid:
+        # If running in CI, interactive login is not possible.
+        if os.environ.get("CI"):
+            raise Exception("Gmail credentials are not valid and interactive login is not possible in CI. Please update the GMAIL_TOKEN secret.")
+        # Otherwise, refresh if possible or run the local server flow.
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            # Load client configuration from the environment variable.
             try:
                 client_config = json.loads(os.environ["CREDENTIALS"])
             except KeyError:
                 raise Exception("Environment variable CREDENTIALS not set!")
             flow = InstalledAppFlow.from_client_config(client_config, SCOPES)
             creds = flow.run_local_server(port=0)
-        # Save the credentials for future use.
+        # Save the new credentials to token.pickle.
         with open('token.pickle', 'wb') as token:
             pickle.dump(creds, token)
     service = build('gmail', 'v1', credentials=creds)
@@ -105,7 +123,7 @@ def send_email(service, recipient_email, subject, markdown_body,
     Create and send an email via the Gmail API.
     Converts the provided Markdown body to HTML and sends a multipart message.
     """
-    # Convert Markdown to HTML.
+    # Convert the Markdown newsletter into HTML.
     html_body = markdown.markdown(markdown_body)
 
     # Create a multipart/alternative container.
