@@ -120,52 +120,34 @@ Podcast2Newsletter is an automated tool that transforms podcast episodes into en
 
 You can run the newsletter generation process locally using one of the following scripts:
 
-- **`action.py`****:**\
+- **`action.py`:**\
   Designed for automated processing (e.g., via GitHub Actions). It processes all feeds defined in `feeds.json`, transcribes new podcast episodes (from the past 24 hours), generates a newsletter, and sends it via email.
 
   ```bash
   python action.py
   ```
 
-- **`main.py`****:**\
-  A standalone script that fetches a single podcast episode, processes it, and generates a Markdown newsletter.
+### Using the Hosted GitHub Actions Version
 
-  ```bash
-  python main.py
-  ```
+If you prefer to run Podcast2Newsletter automatically via GitHub Actions, follow these steps:
 
-- **`geminifull.py`****:**\
-  An alternative script to process an uploaded podcast audio file. It reads episode metadata from `episode.json`, generates a newsletter, and saves it as `newsletter.md`.
+1. **Fork this repository** to your GitHub account.
+2. **Enable GitHub Actions** in your repository settings.
+3. **Configure Secrets:**
+   - Go to `Settings > Secrets and variables > Actions` in your repository.
+   - Add the following secrets:
+     - `GEMINI_API_KEY`
+     - `DEEPGRAM_API_KEY`
+     - `GMAIL_TOKEN`
+4. **Modify `feeds.json`** to include the podcasts you want to track and submit a pull request.
+5. **Trigger the workflow manually**:
+   - Navigate to the `Actions` tab in your GitHub repository.
+   - Select the `Run Newsletter Generator` workflow and click `Run workflow`.
+6. **Scheduled Execution:**
+   - The workflow is configured to run daily at midnight UTC using GitHub Actions' cron scheduler.
+   - You can modify the schedule in `.github/workflows/main.yml` if needed.
 
-  ```bash
-  python geminifull.py
-  ```
-
-### GitHub Actions Integration
-
-The repository includes a GitHub Actions workflow (`.github/workflows/main.yml`) that triggers the `action.py` script daily (using a cron schedule at midnight UTC) or via manual dispatch. This enables automated daily newsletter generation and email distribution.
-
----
-
-## How It Works
-
-1. **Fetching Podcast Episodes:**\
-   The tool parses RSS feeds (configured in `feeds.json`) and identifies new episodes based on the publication date.
-
-2. **Audio Transcription:**\
-   For each new episode, Deepgram transcribes the audio, providing a transcript segmented by timestamps.
-
-3. **Newsletter Generation:**\
-   The transcript segments are sent to Google Gemini’s generative AI, which produces a detailed newsletter with:
-
-   - A title and summary
-   - Multiple sections, each with a descriptive header, detailed content, and clickable timestamps
-
-4. **Markdown Templating:**\
-   A Handlebars template compiles the generated content into a Markdown file (`newsletter.md`).
-
-5. **Email Delivery:**\
-   The newsletter is emailed to the specified recipient using the Gmail API.
+This setup ensures that your podcast newsletters are generated and sent automatically without requiring manual execution.
 
 ---
 
@@ -189,4 +171,6 @@ This project is licensed under the [MIT License](LICENSE).
 - **The Open Source Community:** For continuous contributions and support.
 
 ---
+
+Happy Podcasting and Newslettering!
 
