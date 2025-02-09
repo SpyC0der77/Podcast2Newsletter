@@ -1,146 +1,192 @@
 # Podcast2Newsletter
 
-Podcast2Newsletter is a Python-based tool that automates the process of converting podcast episodes into newsletters. It downloads podcast audio, transcribes it, summarizes key points, and formats them into a Markdown newsletter.
+Podcast2Newsletter is an automated tool that transforms podcast episodes into engaging newsletters. By fetching the latest episodes from RSS feeds, transcribing the audio using Deepgram, and summarizing the content with Google’s Gemini API, this project produces a formatted Markdown newsletter that can be emailed directly to subscribers.
 
 ---
 
 ## Features
 
-- **Podcast Download:** Fetches podcast episodes from an RSS feed.
-- **Audio Processing:** Splits audio files into manageable chunks using FFmpeg.
-- **Transcription:** Converts audio to text using the Whisper ASR model.
-- **Summary and Newsletter Generation:** Summarizes transcriptions and formats them into a newsletter in Markdown.
-- **Handlebars Template:** Provides an easy way to customize newsletter formatting.
+- **Automated Podcast Processing:**\
+  Retrieves podcast episodes from user-defined RSS feeds.
+
+- **Audio Transcription:**\
+  Uses Deepgram to transcribe podcast audio into text, preserving timing information.
+
+- **Newsletter Generation:**\
+  Leverages Google Gemini’s generative AI to create a structured newsletter including a title, summary, and detailed sections with timestamps.
+
+- **Template-Based Markdown Output:**\
+  Formats the generated content with a customizable Handlebars template, providing clickable timestamps for easy navigation.
+
+- **Email Delivery:**\
+  Sends the final newsletter via Gmail using the Gmail API, enabling seamless distribution.
+
+- **GitHub Actions Integration:**\
+  A pre-configured GitHub Actions workflow schedules daily newsletter generation and delivery.
+
+---
+
+## Repository Structure
+
+```
+.
+├── .github/
+│   └── workflows/
+│       └── main.yml         # GitHub Actions workflow for daily execution
+├── .env.example             # Example environment configuration file
+├── .gitignore               # Files and folders to exclude from version control
+├── action.py                # Primary script used by GitHub Actions to process feeds, transcribe audio, and send newsletters
+├── feeds.json               # JSON file listing podcast RSS feeds and recipient email addresses
+├── geminifull.py            # Alternative script for processing an uploaded podcast audio file and generating a newsletter
+├── LICENSE                  # MIT License
+├── main.py                  # Standalone script for processing a single podcast episode into a newsletter
+├── README.MD                # This README file
+└── requirements.txt         # Python dependencies
+```
 
 ---
 
 ## Requirements
 
-- Python 3.7+
-- FFmpeg
-- OpenAI Whisper
-- Google Generative AI API (Gemini)
-- Required Python Libraries:
+- **Python:** 3.7 or higher
+- **APIs and Services:**
+  - [Google Gemini API](https://developers.generativeai.google/)
+  - [Deepgram Transcription API](https://deepgram.com/)
+  - [Gmail API](https://developers.google.com/gmail/api)
+- **Python Libraries:**\
+  The required libraries are listed in [requirements.txt](requirements.txt) and include:
   - `feedparser`
-  - `whisper`
-  - `dotenv`
-  - `pybars`
-  - `tqdm`
+  - `pybars3`
+  - `python-dotenv`
+  - `deepgram-sdk`
   - `google-generativeai`
+  - `google-api-python-client`
+  - `google-auth-httplib2`
+  - `google-auth-oauthlib`
+  - `markdown`
 
 ---
 
 ## Installation
 
-1. Clone the repository:
+1. **Clone the Repository:**
+
    ```bash
    git clone https://github.com/your-username/podcast2newsletter.git
    cd podcast2newsletter
    ```
 
-2. Install the dependencies:
+2. **Install Dependencies:**
+
    ```bash
    pip install -r requirements.txt
    ```
-
-3. Ensure FFmpeg is installed and its path is set in the `.env` file.
 
 ---
 
 ## Configuration
 
-Create a `.env` file in the root directory and add the following environment variables:
+1. **Environment Variables:**\
+   Create a `.env` file in the root directory (you can refer to [`.env.example`](.env.example)) and set the following variables:
 
-```env
-PODCAST_URL=<Your Podcast RSS Feed URL>
-FFMPEG_PATH=<Path to FFmpeg executable>
-GEMINI_API_KEY=<Your Google Gemini API Key>
-```
+   ```env
+   GEMINI_API_KEY=<Your Google Gemini API Key>
+   PODCAST_URL=<Your Podcast RSS Feed URL>
+   DEEPGRAM_API_KEY=<Your Deepgram API Key>
+   GMAIL_TOKEN=<Base64-encoded Gmail token pickle data>
+   ```
+
+2. **Podcast Feeds:**\
+   Configure your podcast feeds and recipient emails in the `feeds.json` file. An example entry looks like:
+
+   ```json
+   [
+     {
+       "url": "https://feeds.megaphone.fm/STU4418364045",
+       "email": "your-email@example.com"
+     },
+     {
+       "url": "https://feeds.megaphone.fm/LMG3928170156",
+       "email": "another-recipient@example.com"
+     }
+   ]
+   ```
 
 ---
 
 ## Usage
 
-1. Run the script:
-   ```bash
-   python podcast2newsletter.py
-   ```
+### Local Execution
 
-2. The script will:
-   - Download the latest podcast episode from the RSS feed.
-   - Split the audio into chunks.
-   - Transcribe each chunk.
-   - Generate a Markdown newsletter summarizing the episode.
+You can run the newsletter generation process locally using one of the following scripts:
 
-3. Output files:
-   - Transcriptions: Stored in `chunks/transcriptions/`.
-   - VTT Files: Stored in `chunks/vtt/`.
-   - Final Newsletter: `newsletter.md`
+- **`action.py`****:**\
+  Designed for automated processing (e.g., via GitHub Actions). It processes all feeds defined in `feeds.json`, transcribes new podcast episodes (from the past 24 hours), generates a newsletter, and sends it via email.
+
+  ```bash
+  python action.py
+  ```
+
+- **`main.py`****:**\
+  A standalone script that fetches a single podcast episode, processes it, and generates a Markdown newsletter.
+
+  ```bash
+  python main.py
+  ```
+
+- **`geminifull.py`****:**\
+  An alternative script to process an uploaded podcast audio file. It reads episode metadata from `episode.json`, generates a newsletter, and saves it as `newsletter.md`.
+
+  ```bash
+  python geminifull.py
+  ```
+
+### GitHub Actions Integration
+
+The repository includes a GitHub Actions workflow (`.github/workflows/main.yml`) that triggers the `action.py` script daily (using a cron schedule at midnight UTC) or via manual dispatch. This enables automated daily newsletter generation and email distribution.
 
 ---
 
 ## How It Works
 
-1. **Podcast Download:**
-   - Parses the RSS feed and downloads the latest episode audio.
+1. **Fetching Podcast Episodes:**\
+   The tool parses RSS feeds (configured in `feeds.json`) and identifies new episodes based on the publication date.
 
-2. **Audio Chunking:**
-   - Splits the audio into smaller chunks for easier processing.
+2. **Audio Transcription:**\
+   For each new episode, Deepgram transcribes the audio, providing a transcript segmented by timestamps.
 
-3. **Transcription:**
-   - Transcribes each chunk using Whisper ASR.
+3. **Newsletter Generation:**\
+   The transcript segments are sent to Google Gemini’s generative AI, which produces a detailed newsletter with:
 
-4. **VTT Merging:**
-   - Merges transcriptions into a single VTT file.
+   - A title and summary
+   - Multiple sections, each with a descriptive header, detailed content, and clickable timestamps
 
-5. **Summary Generation:**
-   - Generates a summarized Markdown newsletter using Google Gemini API and Handlebars templates.
+4. **Markdown Templating:**\
+   A Handlebars template compiles the generated content into a Markdown file (`newsletter.md`).
 
-6. **Markdown Output:**
-   - The final newsletter is saved as `newsletter.md` with clickable timestamps.
+5. **Email Delivery:**\
+   The newsletter is emailed to the specified recipient using the Gmail API.
 
 ---
 
-## Example Output
+## Contributing
 
-```markdown
-# Episode Title
-
-Episode Summary
-
-## Section Header
-
-Section content.
-
-[00:05:30](<Podcast Episode URL>#t=330)
-
-## Another Section Header
-
-More content.
-
-[00:10:15](<Podcast Episode URL>#t=615)
-```
+Contributions are welcome! If you have suggestions or improvements, feel free to fork the repository and submit a pull request. For major changes, please open an issue first to discuss your ideas.
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## Contributions
+## Acknowledgements
 
-Contributions are welcome! Feel free to fork the repository and submit a pull request.
+- **Deepgram:** For providing high-quality transcription services.
+- **Google Gemini API:** For the advanced generative AI capabilities.
+- **GitHub Actions:** For enabling seamless CI/CD and automation.
+- **The Open Source Community:** For continuous contributions and support.
 
 ---
 
-## Star History
-
-<a href="https://star-history.com/#SpyC0der77/Podcast2Newsletter&Date">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=SpyC0der77/Podcast2Newsletter&type=Date&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=SpyC0der77/Podcast2Newsletter&type=Date" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=SpyC0der77/Podcast2Newsletter&type=Date" />
- </picture>
-</a>
